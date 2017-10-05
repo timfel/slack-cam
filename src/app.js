@@ -53,9 +53,9 @@ async function captureImage() {
 	catch (err) { console.log(err); }
 
 	// Zoom!
-	if (verbose) console.log('...squishing vertically');
-	try { buffer = await zoom(buffer); }
-	catch (err) { console.log(err); }
+	// if (verbose) console.log('...squishing vertically');
+	// try { buffer = await zoom(buffer); }
+	// catch (err) { console.log(err); }
 
 	// Crop!
 	if (verbose) console.log('...cropping horizontally');
