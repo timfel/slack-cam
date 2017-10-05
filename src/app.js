@@ -19,7 +19,7 @@ config.brightness = config.brightness || 100;
 // Create a new cam instance;
 let cam = nodecam.create({
 	callbackReturn  : 'buffer'
-, output          : 'png'
+, output          : 'jpeg'
 , verbose         : false
 , device          : config.device
 , delay           : config.delay
