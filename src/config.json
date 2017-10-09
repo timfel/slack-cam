@@ -1,0 +1,12 @@
+{
+    "delay": 2,
+    "frequency": 1,
+    "zoom": false,
+    "crop": false,
+    "width": 640,
+    "height": 480,
+    "format": "jpeg",
+    "verbose": true,
+    "banner": "bottom",
+    "extra_options": " --font :48 --timestamp '%Y-%m-%d %H:%M'",
+}

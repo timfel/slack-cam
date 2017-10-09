@@ -5,28 +5,52 @@ let request       = require('request-promise');
 let gm            = require('gm');
 let sound         = require('play-sound')();
 let imgToAscii    = require('image-to-ascii');
-
-// Emit console log messages?
-let verbose = true;
+let os            = require('os');
+let path          = require('path');
 
 // Import config, and establish defaults
-let config        = require('./config');
+var config;
+try {
+    config = require(path.join(os.homedir(), '.slack-cam-config'));
+} catch(e) {
+    config = require('./config');
+}
+if (config.slackApiToken == undefined) {
+    // allow token to be loaded from separate file
+    try {
+        config.slackApiToken = require(path.join(os.homedir(), '.slack-cam-token')).slackApiToken;
+    } catch(e) {
+        console.err('slackApiToken cannot be required. ' +
+                    'I tried to read it from $HOMEDIR/.slack-cam-config ' +
+                    'and from $HOMEDIR/.slack-cam-token');
+        process.exit();
+    }
+}
 config.delay      = config.delay || 2.5;
 config.frequency  = config.frequency || 5;
-config.zoom       = config.zoom || 475;
+config.zoom       = config.zoom == undefined ? 475 : config.zoom;
+config.crop       = config.crop == undefined ? true : config.crop;
 config.brightness = config.brightness || 100;
+
+// Emit console log messages?
+let verbose = config.verbose;
 
 // Create a new cam instance;
 let cam = nodecam.create({
     callbackReturn  : 'buffer'
-    , output          : 'jpeg'
-    , verbose         : true
+    , output          : config.format || "png"
+    , verbose         : config.verbose
     , device          : config.device
-    , delay           : config.delay + " --font :48 --timestamp \"%Y-%m-%d %H:%M\""
-    , bottomBanner    : true
-    , width           : 640
-    , height          : 480
+    , delay           : config.delay + " " + (config.extra_options || "")
+    , bottomBanner    : config.banner == "bottom"
+    , topBanner       : config.banner == "top"
+    , width           : config.width || 1280
+    , height          : config.height || 1024
 });
+
+if (verbose) {
+    console.log("Config: %j", config);
+}
 
 // Let's get this party started!
 let freq = config.frequency * 1000 * 60;
@@ -57,14 +81,18 @@ async function captureImage() {
     catch (err) { console.log(err); }
 
     // Zoom!
-    // if (verbose) console.log('...squishing vertically');
-    // try { buffer = await zoom(buffer); }
-    // catch (err) { console.log(err); }
+    if (config.zoom != false) {
+        if (verbose) console.log('...squishing vertically');
+        try { buffer = await zoom(buffer); }
+        catch (err) { console.log(err); }
+    }
 
     // // Crop!
-    // if (verbose) console.log('...cropping horizontally');
-    // try { buffer = await crop(buffer); }
-    // catch (err) { console.log(err); }
+    if (config.crop != false) {
+        if (verbose) console.log('...cropping horizontally');
+        try { buffer = await crop(buffer); }
+        catch (err) { console.log(err); }
+    }
 
     // Send the new image to Slack.
     if (verbose) console.log('...uploading to Slack');
@@ -84,7 +112,7 @@ async function captureImage() {
             cam.capture('webcam', (err, buffer) => {
                 if (err) reject(err);
                 else resolve(buffer);
-            })
+            });
         });
     }
 
@@ -96,7 +124,7 @@ async function captureImage() {
                 .toBuffer((err, buffer, info) => {
                     if (err) reject(err);
                     else resolve(buffer);
-                })
+                });
         });
     }
 
