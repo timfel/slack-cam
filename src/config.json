@@ -1,5 +1,6 @@
 {
     "delay": 2,
+    "store_file": true,
     "frequency": 1,
     "zoom": false,
     "crop": false,

@@ -7,6 +7,7 @@ let sound         = require('play-sound')();
 let imgToAscii    = require('image-to-ascii');
 let os            = require('os');
 let path          = require('path');
+let fs            = require('fs');
 
 // Import config, and establish defaults
 var config;
@@ -31,6 +32,7 @@ config.frequency  = config.frequency || 5;
 config.zoom       = config.zoom == undefined ? 475 : config.zoom;
 config.crop       = config.crop == undefined ? true : config.crop;
 config.brightness = config.brightness || 100;
+config.store_file = config.store_file || false;
 
 // Emit console log messages?
 let verbose = config.verbose;
@@ -98,6 +100,15 @@ async function captureImage() {
     if (verbose) console.log('...uploading to Slack');
     try { slackResponse = JSON.parse(await upload(buffer)); }
     catch (err) { console.error(err); }
+
+    // optionally store the file
+    if (config.store_file) {
+        try {
+            await fs.writeFile(Date.now() + ".jpg", buffer);
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     // Done!
     let imageUrl = slackResponse.profile.image_512;
