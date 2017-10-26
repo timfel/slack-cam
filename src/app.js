@@ -24,7 +24,7 @@ if (config.slackApiToken == undefined) {
         console.err('slackApiToken cannot be required. ' +
                     'I tried to read it from $HOMEDIR/.slack-cam-config ' +
                     'and from $HOMEDIR/.slack-cam-token');
-        process.exit();
+        process.exit(1);
     }
 }
 config.delay      = config.delay || 2.5;
