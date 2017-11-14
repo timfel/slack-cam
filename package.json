@@ -17,6 +17,7 @@
     "request-promise": "^4.2.0",
     "sharp": "^0.17.3",
     "zombie": "^4.0",
-    "readline-sync": "^1.4.0"
+    "readline-sync": "^1.4.0",
+    "node-horseman": "^3.3.0"
   }
 }

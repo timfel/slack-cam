@@ -9,95 +9,101 @@ let os            = require('os');
 let path          = require('path');
 let fs            = require('fs');
 
-// Import config, and establish defaults
-var config;
-try {
-    config = require(path.join(os.homedir(), '.slack-cam-config'));
-} catch(e) {
-    config = require('./config');
+if (require.main === module) {
+    // Import config, and establish defaults
+    (async function main() {
+        var config;
+        try {
+            config = require(path.join(os.homedir(), '.slack-cam-config'));
+        } catch(e) {
+            config = require('./config');
+        }
+        if (config.slackApiToken == undefined) {
+            // allow token to be loaded from separate file
+            try {
+                config.slackApiToken = require(path.join(os.homedir(), '.slack-cam-token')).slackApiToken;
+            } catch(e) {
+                console.log('slackApiToken cannot be required. ' +
+                            'I tried to read it from $HOMEDIR/.slack-cam-config ' +
+                            'and from $HOMEDIR/.slack-cam-token. ' +
+                            'Using phantom to access.');
+                const get_token = require('./get_token_phantom.js');
+                config.slackApiToken = await get_token();
+            }
+        }
+        config.delay      = config.delay || 2.5;
+        config.frequency  = config.frequency || 5;
+        config.zoom       = config.zoom == undefined ? 475 : config.zoom;
+        config.crop       = config.crop == undefined ? true : config.crop;
+        config.brightness = config.brightness || 100;
+        config.store_file = config.store_file || false;
+
+        // Create a new cam instance;
+        let cam = nodecam.create({
+            callbackReturn  : 'buffer'
+            , output          : config.format || "png"
+            , verbose         : config.verbose
+            , device          : config.device
+            , delay           : config.delay + " " + (config.extra_options || "")
+            , bottomBanner    : config.banner == "bottom"
+            , topBanner       : config.banner == "top"
+            , width           : config.width || 1280
+            , height          : config.height || 1024
+        });
+
+        if (config.verbose) {
+            console.log("Config: %j", config);
+        }
+
+        function doIt() {
+            captureImage(cam, config);
+        }
+
+        // Let's get this party started!
+        let freq = config.frequency * 1000 * 60;
+        setInterval(doIt, freq);
+        doIt(); // Trigger immediately on load
+    })();
 }
-if (config.slackApiToken == undefined) {
-    // allow token to be loaded from separate file
-    try {
-        config.slackApiToken = require(path.join(os.homedir(), '.slack-cam-token')).slackApiToken;
-    } catch(e) {
-        console.err('slackApiToken cannot be required. ' +
-                    'I tried to read it from $HOMEDIR/.slack-cam-config ' +
-                    'and from $HOMEDIR/.slack-cam-token');
-        process.exit(1);
-    }
-}
-config.delay      = config.delay || 2.5;
-config.frequency  = config.frequency || 5;
-config.zoom       = config.zoom == undefined ? 475 : config.zoom;
-config.crop       = config.crop == undefined ? true : config.crop;
-config.brightness = config.brightness || 100;
-config.store_file = config.store_file || false;
-
-// Emit console log messages?
-let verbose = config.verbose;
-
-// Create a new cam instance;
-let cam = nodecam.create({
-    callbackReturn  : 'buffer'
-    , output          : config.format || "png"
-    , verbose         : config.verbose
-    , device          : config.device
-    , delay           : config.delay + " " + (config.extra_options || "")
-    , bottomBanner    : config.banner == "bottom"
-    , topBanner       : config.banner == "top"
-    , width           : config.width || 1280
-    , height          : config.height || 1024
-});
-
-if (verbose) {
-    console.log("Config: %j", config);
-}
-
-// Let's get this party started!
-let freq = config.frequency * 1000 * 60;
-setInterval(captureImage, freq);
-captureImage(); // Trigger immediately on load
 
 ////////////////////////////////////////////////////////////////////////////////
 
-async function captureImage() {
-
+async function captureImage(cam, config) {
     let buffer;
     let slackResponse;
 
     // Play a sound a few seconds before capture
-    if (verbose) console.log('\n\nHere we go...');
-    if (verbose) console.log('...say cheese!');
+    if (config.verbose) console.log('\n\nHere we go...');
+    if (config.verbose) console.log('...say cheese!');
     try { await sound.play('shutter.mp3'); }
     catch (err) { console.error(err); }
 
     // Grab an image from the webcam
-    if (verbose) console.log('...capturing image');
+    if (config.verbose) console.log('...capturing image');
     try {   buffer = await capture(); }
     catch (err) { console.error(err); }
 
     // Enhance
-    if (verbose) console.log('...enhancing');
+    if (config.verbose) console.log('...enhancing');
     try { buffer = await enhance(buffer); }
     catch (err) { console.log(err); }
 
     // Zoom!
     if (config.zoom != false) {
-        if (verbose) console.log('...squishing vertically');
+        if (config.verbose) console.log('...squishing vertically');
         try { buffer = await zoom(buffer); }
         catch (err) { console.log(err); }
     }
 
     // // Crop!
     if (config.crop != false) {
-        if (verbose) console.log('...cropping horizontally');
+        if (config.verbose) console.log('...cropping horizontally');
         try { buffer = await crop(buffer); }
         catch (err) { console.log(err); }
     }
 
     // Send the new image to Slack.
-    if (verbose) console.log('...uploading to Slack');
+    if (config.verbose) console.log('...uploading to Slack');
     try { slackResponse = JSON.parse(await upload(buffer)); }
     catch (err) { console.error(err); }
 

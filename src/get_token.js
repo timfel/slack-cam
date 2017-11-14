@@ -17,6 +17,10 @@ if (config.slackTeam == undefined) {
         process.exit(0);
     }
 
+    function catchall(e) {
+        console.log("An error occurred: " + e);
+    }
+
     browser.on('error', (err) => {
         if (loggedIn) {
             // we don't need to run the Javascript after logging in
@@ -34,8 +38,8 @@ if (config.slackTeam == undefined) {
             submitLogin();
         } else {
             // external login, e.g. SSO or something, click the first link in the contents
-            browser.clickLink('#page_contents a').then(() => {
-                browser.wait().then(() => {
+            browser.clickLink('#page_contents a', () => {
+                browser.wait(() => {
                     // zombie.js does not register forms by name on the document
                     for (var i = 0; i < browser.document.forms.length; i++) {
                         var form = browser.document.forms[i];
@@ -49,7 +53,7 @@ if (config.slackTeam == undefined) {
                         injectedScript.innerHTML = onLoadText;
                         browser.body.appendChild(injectedScript);
                     }
-                    browser.wait().then(() => {
+                    browser.wait(() => {
                         var usernameSelector = 'input[id*=email]';
                         if (browser.querySelector(usernameSelector) == null) {
                             usernameSelector = 'input[id*=username]';
@@ -66,7 +70,7 @@ if (config.slackTeam == undefined) {
     function submitLogin() {
         browser.document.forms[0].submit();
         loggedIn = true;
-        browser.wait().then(() => {
+        browser.wait(() => {
             extractToken();
         });
     }
