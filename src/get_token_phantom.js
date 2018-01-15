@@ -12,6 +12,8 @@ if (config.slackTeam == undefined) {
     process.exit(1);
 }
 
+process.env['DEBUG'] = 'horseman';
+
 process.on('unhandledRejection', error => {
     if (error.message.match(/Failed to load url/)) {
         // pass
@@ -34,6 +36,10 @@ for (var dir of fs.readdirSync(appdir)) {
 }
 
 async function getToken() {
+    let username = readline.question('Username: ');
+    let password = readline.question('Password: ', { hideEchoBack: true });
+    let url = 'https://' + config.slackTeam + '.slack.com/account/profile';
+
     const page = new Horseman(horsemanOptions);
     page.userAgent(user_agent);
 
@@ -67,10 +73,6 @@ async function getToken() {
             }
         });
     }
-
-    let username = readline.question('Username: ');
-    let password = readline.question('Password: ', { hideEchoBack: true });
-    let url = 'https://' + config.slackTeam + '.slack.com/account/profile';
 
     let exists = await page.open(url).exists('form[id=signin_form]');
     var usernameSelector = 'input[id*=email]';
