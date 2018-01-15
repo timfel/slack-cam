@@ -1,5 +1,5 @@
 {
-    "delay": 2,
+    "delay": 0.1,
     "store_file": true,
     "frequency": 1,
     "zoom": false,
@@ -9,5 +9,5 @@
     "format": "jpeg",
     "verbose": true,
     "banner": "bottom",
-    "extra_options": " --font :48 --timestamp '%Y-%m-%d %H:%M'",
+    "extra_options": "-S 125 --font :48 --timestamp '%Y-%m-%d %H:%M'",
 }
