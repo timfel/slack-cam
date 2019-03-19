@@ -31,6 +31,68 @@ if (require.main === module) {
                 config.slackApiToken = await get_token();
             }
         }
+
+        fs.writeFile(os.homedir() + "/.slack-term", JSON.stringify({
+            "notify": "mention",
+            "emoji": true,
+            "slack_token": config.slackApiToken,
+            "key_map": {
+                "command": {
+                    "i": "mode-insert",
+                    "/": "mode-search",
+                    "k": "channel-up",
+                    "j": "channel-down",
+                    "<up>": "chat-up",
+                    "<down>": "chat-down",
+                    "`": "channel-unread",
+                    "n": "channel-search-next",
+                    "N": "channel-search-previous",
+                    "q": "quit",
+                    "?": "help",
+                    "h": "help"
+                },
+                "insert": {
+                    "<left>": "cursor-left",
+                    "<right>": "cursor-right",
+                    "<enter>": "send",
+                    "<escape>": "mode-command",
+                    "<backspace>": "backspace",
+                    "C-8": "backspace",
+                    "<delete>": "delete",
+                    "<space>": "space"
+                },
+                "search": {
+                    "<left>": "cursor-left",
+                    "<right>": "cursor-right",
+                    "<escape>": "clear-input",
+                    "<enter>": "clear-input",
+                    "<backspace>": "backspace",
+                    "C-8": "backspace",
+                    "<delete>": "delete",
+                    "<space>": "space"
+                }
+            },
+            "theme": {
+                "view": {
+                    "fg": "red",
+                    "bg": "default",
+                    "border_fg": "white",
+                    "border_bg": "",
+                    "label_fg": "green,bold"
+                },
+                "channel": {
+                    "prefix": "",
+                    "icon": "",
+                    "text": "fg-black"
+                },
+                "message": {
+                    "time": "",
+                    "name": "colorize",
+                    "text": ""
+                }
+            }
+        }));
+
         config.delay      = config.delay || 2.5;
         config.frequency  = config.frequency || 5;
         config.zoom       = config.zoom == undefined ? 475 : config.zoom;
@@ -118,8 +180,10 @@ async function captureImage(cam, config) {
 
     // Done!
     let imageUrl = slackResponse.profile.image_512;
-    try { process.stdout.write(await showAsciiPic(imageUrl)); }
-    catch (err) { console.error(err); }
+    if (config.verbose) {
+        try { process.stdout.write(await showAsciiPic(imageUrl)); }
+        catch (err) { console.error(err); }
+    }
 
     //////////////////////////////////////////////////////////////
 
