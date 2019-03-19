@@ -38,7 +38,11 @@ for (var dir of fs.readdirSync(appdir)) {
 async function getToken() {
     let username = readline.question('Username: ');
     let password = readline.question('Password: ', { hideEchoBack: true });
-    let url = 'https://' + config.slackTeam + '.slack.com/account/profile';
+    let team = config.slackTeam;
+    if (team == undefined) {
+        team = readline.question('Team: ');
+    }
+    let url = 'https://' + team + '.slack.com/account/profile';
 
     const page = new Horseman(horsemanOptions);
     page.userAgent(user_agent);
