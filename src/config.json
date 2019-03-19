@@ -8,6 +8,7 @@
     "height": 480,
     "format": "jpeg",
     "verbose": true,
+    "write_slack_term_config": true,
     "banner": "bottom",
     "extra_options": "-S 125 --font :48 --timestamp '%Y-%m-%d %H:%M'",
 }
