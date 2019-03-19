@@ -52,6 +52,9 @@ async function getToken() {
     async function extractToken(text) {
         if (text) {
             let match = text.match(/api_token: ["']([a-z0-9\-]*)["']/);
+            if (!match) {
+                match = text.match(/["']api_token["']\s*:\s*["'](xoxs-[a-z0-9\-]*)["']/);
+            }
             if (match) {
                 let token = match[1];
                 if (token && !wasResolved) {
@@ -60,6 +63,8 @@ async function getToken() {
                     resolveFunction(token);
                     await page.close();
                 }
+            } else {
+
             }
         }
     }
@@ -69,7 +74,9 @@ async function getToken() {
         // nonetheless and just check anything the gets loaded from now on
         page.on('loadFinished', (status) => {
             if (status == "success") {
-                page.html().then(extractToken).catch(e => {});
+                page.html().then(extractToken).catch(e => {
+                    console.log(e);
+                });
             }
         });
     }
