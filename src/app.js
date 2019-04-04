@@ -35,7 +35,7 @@ if (require.main === module) {
         if (config.write_slack_term_config) {
             fs.writeFile(os.homedir() + "/.slack-term", JSON.stringify({
                 "notify": "mention",
-                "emoji": true,
+                "emoji": false,
                 "sidebar_width": 2,
                 "slack_token": config.slackApiToken,
                 "key_map": {
