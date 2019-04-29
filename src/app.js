@@ -34,47 +34,10 @@ if (require.main === module) {
 
         if (config.write_slack_term_config) {
             fs.writeFile(os.homedir() + "/.slack-term", JSON.stringify({
-                "notify": "mention",
-                "emoji": false,
+                "notify": "mention,python,Python",
+                "emoji": true,
                 "sidebar_width": 2,
                 "slack_token": config.slackApiToken,
-                "key_map": {
-                    "command": {
-                        "i": "mode-insert",
-                        "/": "mode-search",
-                        "k": "channel-up",
-                        "j": "channel-down",
-                        "<up>": "chat-up",
-                        "<down>": "chat-down",
-                        "<pg-up>": "channel-top",
-                        "<pg-down>": "channel-bottom",
-                        "n": "channel-search-next",
-                        "N": "channel-search-previous",
-                        "q": "quit",
-                        "?": "help",
-                        "h": "help"
-                    },
-                    "insert": {
-                        "<left>": "cursor-left",
-                        "<right>": "cursor-right",
-                        "<enter>": "send",
-                        "<escape>": "mode-command",
-                        "<backspace>": "backspace",
-                        "C-8": "backspace",
-                        "<delete>": "delete",
-                        "<space>": "space"
-                    },
-                    "search": {
-                        "<left>": "cursor-left",
-                        "<right>": "cursor-right",
-                        "<escape>": "clear-input",
-                        "<enter>": "clear-input",
-                        "<backspace>": "backspace",
-                        "C-8": "backspace",
-                        "<delete>": "delete",
-                        "<space>": "space"
-                    }
-                },
                 "theme": {
                     "view": {
                         "fg": "red",
